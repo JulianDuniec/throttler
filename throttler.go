@@ -1,6 +1,4 @@
-package main
-
-import "fmt"
+package throttler
 
 /*
 	Throttler takes a list of data and
@@ -9,9 +7,9 @@ import "fmt"
 	goroutines defined by chunkSize
 */
 type Throttler struct {
-	chunkSize    int
-	worker       func(interface{}, chan interface{})
-	finishedItem func(interface{})
+	ChunkSize    int
+	Worker       func(interface{}, chan interface{})
+	FinishedItem func(interface{})
 }
 
 /*
@@ -22,7 +20,7 @@ type Throttler struct {
 func (t *Throttler) Run(data []interface{}) {
 
 	//Adapt chunksize 
-	maxLength := t.chunkSize
+	maxLength := t.ChunkSize
 	if len(data) < maxLength {
 		maxLength = len(data)
 	}
@@ -33,7 +31,7 @@ func (t *Throttler) Run(data []interface{}) {
 
 	//Execute the worker-processes
 	for i := 0; i < maxLength; i++ {
-		go t.worker(data[i], resultChannel)
+		go t.Worker(data[i], resultChannel)
 	}
 
 	//Synchronize the results from each
@@ -41,7 +39,7 @@ func (t *Throttler) Run(data []interface{}) {
 	//each item
 	for i := 0; i < maxLength; i++ {
 		currentResult := <-resultChannel
-		t.finishedItem(currentResult)
+		t.FinishedItem(currentResult)
 	}
 
 	//Check if we have any remaining data that needs to be processed
